@@ -314,13 +314,4 @@ public interface ConstrettoConfiguration extends Iterable<Property> {
      */
     List<String> getCurrentTags();
 
-    /**
-     * Iterates over all objects that have been configured with at or on. and reapplies configuration
-     * with new settings.
-     *
-     * @throws ConstrettoException If a conversion error occurs when reconfiguring objects.
-     * @deprecated Will be removed in the 3.0 release as it does not gurantee thread safety
-     */
-    @Deprecated
-    void reconfigure() throws ConstrettoException;
 }

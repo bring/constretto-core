@@ -34,13 +34,24 @@ import org.constretto.model.CValue;
 import org.constretto.model.ConfigurationValue;
 
 import java.lang.annotation.Annotation;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
-import static org.constretto.internal.GenericCollectionTypeResolver.*;
+import static org.constretto.internal.GenericCollectionTypeResolver.getCollectionFieldType;
+import static org.constretto.internal.GenericCollectionTypeResolver.getCollectionParameterType;
+import static org.constretto.internal.GenericCollectionTypeResolver.getMapKeyFieldType;
+import static org.constretto.internal.GenericCollectionTypeResolver.getMapKeyParameterType;
+import static org.constretto.internal.GenericCollectionTypeResolver.getMapValueFieldType;
+import static org.constretto.internal.GenericCollectionTypeResolver.getMapValueParameterType;
 
 /**
  * @author <a href="mailto:kaare.nilsen@gmail.com">Kaare Nilsen</a>
@@ -51,7 +62,6 @@ public class DefaultConstrettoConfiguration implements ConstrettoConfiguration {
     private final Paranamer paranamer = new BytecodeReadingParanamer();
 
     protected final Map<String, List<ConfigurationValue>> configuration;
-    private Set<WeakReference<Object>> configuredObjects = new CopyOnWriteArraySet<WeakReference<Object>>();
     private final List<String> originalTags = new ArrayList<String>();
     protected final List<String> currentTags = new ArrayList<String>();
 
@@ -173,33 +183,26 @@ public class DefaultConstrettoConfiguration implements ConstrettoConfiguration {
 
     public void appendTag(String... newtags) {
         currentTags.addAll(asList(newtags));
-        reconfigure();
     }
 
     public void prependTag(String... newtags) {
         currentTags.addAll(0, asList(newtags));
-        reconfigure();
     }
 
     public void resetTags(boolean reconfigure) {
         currentTags.clear();
         currentTags.addAll(originalTags);
-        if (reconfigure)
-            reconfigure();
     }
 
     public void clearTags(boolean reconfigure) {
         currentTags.clear();
         originalTags.clear();
-        if (reconfigure)
-            reconfigure();
     }
 
     public void removeTag(String... newTags) {
         for (String newTag : newTags) {
             currentTags.remove(newTag);
         }
-        reconfigure();
     }
 
     public List<String> getCurrentTags() {
@@ -213,16 +216,6 @@ public class DefaultConstrettoConfiguration implements ConstrettoConfiguration {
             properties.add(new Property(entry.getKey(), entry.getValue()));
         }
         return properties.iterator();
-    }
-
-    @Override
-    public void reconfigure() {
-        WeakReference[] references = configuredObjects.toArray(new WeakReference[configuredObjects.size()]);
-        for (WeakReference reference : references) {
-            if (reference != null && reference.get() != null) {
-                on(reference.get());
-            }
-        }
     }
 
     //
@@ -334,16 +327,6 @@ public class DefaultConstrettoConfiguration implements ConstrettoConfiguration {
     private <T> void injectConfiguration(T objectToConfigure) {
         injectFields(objectToConfigure);
         injectMethods(objectToConfigure);
-        boolean found = false;
-        for (WeakReference<Object> configuredObject : configuredObjects) {
-            if (configuredObject.get() == objectToConfigure) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            this.configuredObjects.add(new WeakReference<Object>(objectToConfigure));
-        }
     }
 
     private Object[] resolveParameters(AccessibleObject accessibleObject) throws IllegalAccessException, InstantiationException {

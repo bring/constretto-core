@@ -5,7 +5,6 @@ import org.constretto.ConstrettoConfiguration;
 import org.constretto.annotation.Configuration;
 import org.constretto.annotation.Configure;
 import org.constretto.model.ClassPathResource;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,30 +69,6 @@ public class DynamicReconfiguringTagsTest {
         configuration.clearTags(true);
         assertEquals("default value", configuration.evaluateToString("stagedKey"));
     }
-
-    @Test
-    public void whenAppendingTagsRuntimeObjectsInjectedWithConfigurationShouldBeResolvedCorrectly() throws InterruptedException {
-        ConfiguredClass configuredClass = new ConfiguredClass();
-        config.on(configuredClass);
-        assertEquals("default value", configuredClass.stagedKey);
-        assertEquals("default", configuredClass.stagedVariable);
-        config.appendTag("test");
-        assertEquals("test value", configuredClass.stagedKey);
-        assertEquals("test", configuredClass.stagedVariable);
-        config.appendTag("prod");
-        assertEquals("test value", configuredClass.stagedKey);
-        assertEquals("test", configuredClass.stagedVariable);
-        config.removeTag("test");
-        assertEquals("prod value", configuredClass.stagedKey);
-        assertEquals("prod", configuredClass.stagedVariable);
-        config.removeTag("prod");
-        assertEquals("default value", configuredClass.stagedKey);
-        assertEquals("default", configuredClass.stagedVariable);
-        configuredClass = null;
-        config.appendTag("linux");
-        Assert.assertNull(configuredClass);
-    }
-
 
     private class ConfiguredClass {
         @Configuration
