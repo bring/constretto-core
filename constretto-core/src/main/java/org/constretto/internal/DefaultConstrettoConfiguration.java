@@ -181,30 +181,6 @@ public class DefaultConstrettoConfiguration implements ConstrettoConfiguration {
         return findElementOrNull(expression) != null;
     }
 
-    public void appendTag(String... newtags) {
-        currentTags.addAll(asList(newtags));
-    }
-
-    public void prependTag(String... newtags) {
-        currentTags.addAll(0, asList(newtags));
-    }
-
-    public void resetTags(boolean reconfigure) {
-        currentTags.clear();
-        currentTags.addAll(originalTags);
-    }
-
-    public void clearTags(boolean reconfigure) {
-        currentTags.clear();
-        originalTags.clear();
-    }
-
-    public void removeTag(String... newTags) {
-        for (String newTag : newTags) {
-            currentTags.remove(newTag);
-        }
-    }
-
     public List<String> getCurrentTags() {
         return currentTags;
     }
